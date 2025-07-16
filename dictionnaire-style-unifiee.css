@@ -161,6 +161,20 @@
   #dictionary-content {
     padding: 1rem 0.8rem;
   }
+
+  #dictionary-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  #dictionary-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dict-tab {
+    flex: 0 0 auto;
+    padding: 0.4em 0.8em;
+  }
 }
 /* ✅ Titre de définition : style sobre et discret */
 #dictionary-content h2 {
@@ -177,5 +191,15 @@
 @media (max-width: 640px) {
   #dictionary-content h2 {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #dictionary-search {
+    font-size: 0.9rem;
+  }
+
+  #word-list a {
+    font-size: 0.9rem;
   }
 }
