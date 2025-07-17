@@ -10,7 +10,7 @@ add_action('wp_enqueue_scripts', function() {
     wp_enqueue_script('figuier-swiper', get_stylesheet_directory_uri() . '/js/swiper.js', array('swiper-js'), null, true);
 
     // ✅ Interface dictionnaire + localisation des sources JSON
-    wp_enqueue_script('figuier-dictionary', get_stylesheet_directory_uri() . '/js/interface-unifiee.js', array(), null, true);
+    wp_enqueue_script('figuier-dictionary', get_stylesheet_directory_uri() . '/interface-unifiee.js', array(), null, true);
     $upload_dir = wp_upload_dir();
     $dictionary_sources = array(
         'BYM'   => $upload_dir['baseurl'] . '/dictionnaires/lexique-bym.json',
