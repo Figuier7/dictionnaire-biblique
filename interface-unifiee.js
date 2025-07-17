@@ -13,7 +13,26 @@ let currentPage = 1;
 const itemsPerPage = 30;
 
 function normalizeInput(str) {
-  return (str || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toUpperCase();
+  let out = (str || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toUpperCase()
+    .replace(/['’]/g, "");
+
+  const map = {
+    OU: "U",
+    OE: "E",
+    AE: "E",
+    PH: "F",
+    TH: "T",
+    CH: "K"
+  };
+
+  Object.entries(map).forEach(([k, v]) => {
+    out = out.replace(new RegExp(k, "g"), v);
+  });
+
+  return out.trim();
 }
 
 function initDictionaryApp() {
@@ -67,9 +86,7 @@ function initDictionaryApp() {
 
   function listWords(dict, letter, page = 1) {
     const cleanLetter = normalizeInput(letter);
-    const data = allData[dict].filter(e =>
-      normalizeInput(e.mot).startsWith(cleanLetter)
-    );
+    const data = allData[dict].filter(e => e.norm.startsWith(cleanLetter));
     const total = Math.ceil(data.length / itemsPerPage);
     const start = (page - 1) * itemsPerPage;
     const shown = data.slice(start, start + itemsPerPage);
@@ -86,7 +103,8 @@ function initDictionaryApp() {
   }
 
   function displayDefinition(dict, mot) {
-    const found = allData[dict].find(e => normalizeInput(e.mot) === normalizeInput(mot));
+    const normMot = normalizeInput(mot);
+    const found = allData[dict].find(e => e.norm === normMot);
     if (!found) {
       content.innerHTML = "<p>Mot introuvable.</p>";
       return;
@@ -117,14 +135,20 @@ function initDictionaryApp() {
   function handleSearch() {
     const val = normalizeInput(this.value.trim());
     if (val.length < 2) return;
-    const results = allData[currentDict]
+    const combined = Object.values(allData).flat();
+    const results = combined
       .map(e => ({
         mot: e.mot,
-        score: normalizeInput(e.mot).includes(val) ? 0 : 1
+        dict: e.dict,
+        norm: e.norm,
+        idx: e.norm.indexOf(val)
       }))
-      .sort((a, b) => a.score - b.score)
+      .filter(e => e.idx !== -1)
+      .sort((a, b) => a.idx - b.idx || a.mot.localeCompare(b.mot))
       .slice(0, 50);
-    list.innerHTML = results.map(e => `<a href="#${currentDict}/${e.mot}">${e.mot}</a>`).join("");
+    list.innerHTML = results
+      .map(e => `<a href="#${e.dict}/${e.mot}">${e.mot} (${e.dict})</a>`)
+      .join("");
     content.innerHTML = "";
     list.style.display = "block";
   }
@@ -133,8 +157,11 @@ function initDictionaryApp() {
     const res = await fetch(url);
     const data = await res.json();
     allData[key] = Array.isArray(data)
-      ? data.map(e => ({ mot: e.mot || e.term || "", definition: e.definition || "" }))
-      : Object.entries(data).map(([mot, def]) => ({ mot, definition: def }));
+      ? data.map(e => {
+          const mot = e.mot || e.term || "";
+          return { mot, definition: e.definition || "", dict: key, norm: normalizeInput(mot) };
+        })
+      : Object.entries(data).map(([mot, def]) => ({ mot, definition: def, dict: key, norm: normalizeInput(mot) }));
   })).then(() => {
     buildAlphabet(currentDict);
     listWords(currentDict, currentLetter, currentPage);
