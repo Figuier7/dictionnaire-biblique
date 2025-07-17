@@ -143,6 +143,14 @@
   text-decoration: underline;
 }
 
+/* ⚠️ Zone d'affichage des messages */
+#dictionary-message {
+  text-align: center;
+  color: #b00020;
+  font-weight: bold;
+  margin: 1em 0;
+}
+
 
 /* 📱 Responsive design : masquer alphabet et pagination, mots visibles */
 @media (max-width: 640px) {

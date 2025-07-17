@@ -42,6 +42,9 @@ function initDictionaryApp() {
   search.placeholder = "🔍 Rechercher un mot...";
   search.id = "dictionary-search";
   list.before(search);
+  const message = document.createElement("div");
+  message.id = "dictionary-message";
+  search.insertAdjacentElement("afterend", message);
 
   function resetView() {
     list.style.display = "block";
@@ -162,12 +165,26 @@ function initDictionaryApp() {
   }
 
   Promise.all(Object.entries(sources).map(async ([key, url]) => {
-    const res = await fetch(url);
-    const data = await res.json();
-    allData[key] = Array.isArray(data)
-      ? data.map(e => ({ mot: e.mot || e.term || "", definition: e.definition || "" }))
-      : Object.entries(data).map(([mot, def]) => ({ mot, definition: def }));
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      allData[key] = Array.isArray(data)
+        ? data.map(e => ({ mot: e.mot || e.term || "", definition: e.definition || "" }))
+        : Object.entries(data).map(([mot, def]) => ({ mot, definition: def }));
+    } catch (err) {
+      console.error(`Failed to load dictionary ${key}:`, err);
+      const p = document.createElement("p");
+      p.textContent = `Impossible de charger le dictionnaire ${key}.`;
+      message.appendChild(p);
+    }
   })).then(() => {
+    if (Object.keys(allData).length === 0) {
+      const p = document.createElement("p");
+      p.textContent = "Aucun dictionnaire n'a pu être chargé.";
+      message.appendChild(p);
+      return;
+    }
     buildAlphabet(currentDict);
     listWords(currentDict, currentLetter, currentPage);
     handleHash();
