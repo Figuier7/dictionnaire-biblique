@@ -123,9 +123,13 @@ function initDictionaryApp() {
     const htmlSegments = [`<p><a href="#" id="back">← Retour à la liste</a></p>`];
     matches.forEach(({ dict: d, entry }) => {
       const dictName = d === "BYM" ? "Dictionnaire biblique de la BYM" : d === "Easton" ? "Easton's Bible Dictionary" : d;
+      const rawHtml = marked.parse(entry.definition);
+      const cleanHtml = typeof DOMPurify !== "undefined"
+        ? DOMPurify.sanitize(rawHtml)
+        : rawHtml;
       htmlSegments.push(
         `<h2>${entry.mot} — ${dictName}</h2>`,
-        marked.parse(entry.definition)
+        cleanHtml
       );
     });
     content.innerHTML = htmlSegments.join("\n");
