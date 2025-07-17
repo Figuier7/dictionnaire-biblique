@@ -32,6 +32,7 @@ function afficher_dictionnaire_interactif() {
 
     <!-- JS: Marked.js + Script principal -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
     <script src="<?php echo get_stylesheet_directory_uri(); ?>/js/interface-unifiee.js"></script>
 
     <!-- JS additionnel pour la note et affichage "en cours de traduction" -->
