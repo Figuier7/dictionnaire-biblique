@@ -86,19 +86,29 @@ function initDictionaryApp() {
   }
 
   function displayDefinition(dict, mot) {
-    const found = allData[dict].find(e => normalizeInput(e.mot) === normalizeInput(mot));
-    if (!found) {
+    const normalized = normalizeInput(mot);
+    const matches = Object.entries(allData)
+      .map(([key, entries]) => {
+        const entry = entries.find(e => normalizeInput(e.mot) === normalized);
+        return entry ? { dict: key, entry } : null;
+      })
+      .filter(Boolean);
+
+    if (matches.length === 0) {
       content.innerHTML = "<p>Mot introuvable.</p>";
       return;
     }
+
     list.style.display = "none";
-    
-    const dictName = dict === "BYM" ? "Dictionnaire biblique de la BYM" : dict === "Easton" ? "Easton's Bible Dictionary" : dict;
-    content.innerHTML = `
-      <p><a href="#" id="back">← Retour à la liste</a></p>
-      <h2>${found.mot} — ${dictName}</h2>
-      ${marked.parse(found.definition)}
-    `;
+    const htmlSegments = [`<p><a href="#" id="back">← Retour à la liste</a></p>`];
+    matches.forEach(({ dict: d, entry }) => {
+      const dictName = d === "BYM" ? "Dictionnaire biblique de la BYM" : d === "Easton" ? "Easton's Bible Dictionary" : d;
+      htmlSegments.push(
+        `<h2>${entry.mot} — ${dictName}</h2>`,
+        marked.parse(entry.definition)
+      );
+    });
+    content.innerHTML = htmlSegments.join("\n");
 
     document.getElementById("back").onclick = e => {
       e.preventDefault();
