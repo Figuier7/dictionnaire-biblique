@@ -13,7 +13,27 @@ let currentPage = 1;
 const itemsPerPage = 30;
 
 function normalizeInput(str) {
-  return (str || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toUpperCase();
+  return (str || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim()
+    .toUpperCase();
+}
+
+function tolerantNormalize(str) {
+  let s = normalizeInput(str);
+  const map = {
+    PH: "F",
+    TH: "T",
+    KH: "H",
+    CH: "H",
+    Q: "K",
+    TS: "Z",
+  };
+  Object.entries(map).forEach(([k, v]) => {
+    s = s.replace(new RegExp(k, "g"), v);
+  });
+  return s;
 }
 
 function initDictionaryApp() {
@@ -86,10 +106,10 @@ function initDictionaryApp() {
   }
 
   function displayDefinition(dict, mot) {
-    const normalized = normalizeInput(mot);
+    const normalized = tolerantNormalize(mot);
     const matches = Object.entries(allData)
       .map(([key, entries]) => {
-        const entry = entries.find(e => normalizeInput(e.mot) === normalized);
+        const entry = entries.find(e => tolerantNormalize(e.mot) === normalized);
         return entry ? { dict: key, entry } : null;
       })
       .filter(Boolean);
@@ -125,16 +145,17 @@ function initDictionaryApp() {
   }
 
   function handleSearch() {
-    const val = normalizeInput(this.value.trim());
+    const val = tolerantNormalize(this.value.trim());
     if (val.length < 2) return;
-    const results = allData[currentDict]
-      .map(e => ({
-        mot: e.mot,
-        score: normalizeInput(e.mot).includes(val) ? 0 : 1
-      }))
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 50);
-    list.innerHTML = results.map(e => `<a href="#${currentDict}/${e.mot}">${e.mot}</a>`).join("");
+    const matches = Object.entries(allData).flatMap(([dict, entries]) =>
+      entries
+        .filter(e => tolerantNormalize(e.mot).includes(val))
+        .map(e => ({ dict, mot: e.mot }))
+    );
+    const top = matches.slice(0, 50);
+    list.innerHTML = top
+      .map(e => `<a href="#${e.dict}/${e.mot}">${e.mot} <small>(${e.dict})</small></a>`)
+      .join("");
     content.innerHTML = "";
     list.style.display = "block";
   }
