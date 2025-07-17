@@ -1,10 +1,7 @@
 
 console.log("✅ Interface unifiée du dictionnaire chargée (correction startsWith)");
 
-const sources = {
-  BYM: "/wp-content/uploads/dictionnaires/lexique-bym.json",
-  Easton: "/wp-content/uploads/dictionnaires/eastons.json"
-};
+const sources = window.dictionarySources || {};
 
 let allData = {};
 let currentDict = "BYM";

@@ -8,6 +8,15 @@ add_action('wp_enqueue_scripts', function() {
     wp_enqueue_style('swiper-css', 'https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css');
     wp_enqueue_script('swiper-js', 'https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js', array(), null, true);
     wp_enqueue_script('figuier-swiper', get_stylesheet_directory_uri() . '/js/swiper.js', array('swiper-js'), null, true);
+
+    // ✅ Interface dictionnaire + localisation des sources JSON
+    wp_enqueue_script('figuier-dictionary', get_stylesheet_directory_uri() . '/js/interface-unifiee.js', array(), null, true);
+    $upload_dir = wp_upload_dir();
+    $dictionary_sources = array(
+        'BYM'   => $upload_dir['baseurl'] . '/dictionnaires/lexique-bym.json',
+        'Easton' => $upload_dir['baseurl'] . '/dictionnaires/eastons.json',
+    );
+    wp_localize_script('figuier-dictionary', 'dictionarySources', $dictionary_sources);
 });
 
 // ✅ Fonction pour afficher les derniers posts (grille ou carrousel)
